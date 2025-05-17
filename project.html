@@ -148,4 +148,337 @@
                 </table>
             </div>
         </div>
+ <!-- Progress Section -->
+        <div class="mb-12 p-6 bg-gray-50 rounded-xl shadow-lg animate-fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                Progress Report
+            </h2>
+            <button onclick="showProgress()" class="bg-gradient-to-r from-teal-500 to-blue-600 text-white px-6 py-3 rounded-md hover:bg-teal-600">Generate Report</button>
+            <div id="progressReport" class="mt-6 text-gray-700 leading-relaxed"></div>
+            <canvas id="calorieChart" class="mt-6"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Debug log to confirm JavaScript is running
+        console.log("Diet and Fitness Tracker JavaScript initialized");
+
+        // Predefined food data
+        const foodData = {
+            "Apple": { calories: 95, protein: 0.5, carbs: 25, fats: 0.2 },
+            "Banana": { calories: 120, protein: 1.2, carbs: 30, fats: 0.3 },
+            "Rice": { calories: 200, protein: 4, carbs: 45, fats: 0.5 },
+            "Bread": { calories: 80, protein: 3, carbs: 15, fats: 1 },
+            "Egg": { calories: 70, protein: 6, carbs: 1, fats: 5 },
+            "Chicken": { calories: 165, protein: 31, carbs: 0, fats: 3.6 },
+            "Milk": { calories: 120, protein: 8, carbs: 12, fats: 5 },
+            "Orange": { calories: 85, protein: 1, carbs: 21, fats: 0.2 }
+        };
+
+        // Predefined exercise data (calories per minute)
+        const exerciseData = {
+            "Walking": 5,
+            "Running": 10,
+            "Cycling": 8,
+            "Swimming": 9,
+            "Yoga": 4,
+            "Weight Lifting": 6,
+            "Jump Rope": 12
+        };
+
+        // Team Member 1: User Profile Management (200+ lines)
+        class UserProfile {
+            constructor() {
+                this.profile = null;
+                this.loadProfile();
+            }
+
+            // Validate profile inputs
+            validateProfile(username, age, height, weight, gender, calorieGoal) {
+                let errors = [];
+                if (!username || username.length < 3) {
+                    errors.push("Username must be at least 3 characters.");
+                }
+                if (!age || age < 18 || age > 120) {
+                    errors.push("Age must be between 18 and 120.");
+                }
+                if (!height || height < 100 || height > 250) {
+                    errors.push("Height must be between 100 and 250 cm.");
+                }
+                if (!weight || weight < 30 || weight > 300) {
+                    errors.push("Weight must be between 30 and 300 kg.");
+                }
+                if (!gender) {
+                    errors.push("Gender is required.");
+                }
+                if (!calorieGoal || calorieGoal < 1000 || calorieGoal > 5000) {
+                    errors.push("Calorie goal must be between 1000 and 5000.");
+                }
+                return errors;
+            }
+
+            // Calculate BMI
+            calculateBMI(height, weight) {
+                try {
+                    const heightInMeters = height / 100;
+                    const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(2);
+                    return isNaN(bmi) ? "N/A" : bmi;
+                } catch (e) {
+                    console.error("BMI calculation error:", e);
+                    return "N/A";
+                }
+            }
+
+            // Save profile to localStorage
+            saveProfile(username, age, height, weight, gender, calorieGoal) {
+                const errors = this.validateProfile(username, age, height, weight, gender, calorieGoal);
+                if (errors.length > 0) {
+                    document.getElementById("profileError").innerText = errors.join(" ");
+                    return false;
+                }
+                try {
+                    this.profile = {
+                        username,
+                        age: parseInt(age),
+                        height: parseFloat(height),
+                        weight: parseFloat(weight),
+                        gender,
+                        calorieGoal: parseInt(calorieGoal),
+                        bmi: this.calculateBMI(height, weight)
+                    };
+                    localStorage.setItem("userProfile", JSON.stringify(this.profile));
+                    this.displayProfile();
+                    document.getElementById("profileError").innerText = "";
+                    return true;
+                } catch (e) {
+                    console.error("Profile save error:", e);
+                    document.getElementById("profileError").innerText = "Failed to save profile. Check browser settings.";
+                    return false;
+                }
+            }
+
+            // Load profile from localStorage
+            loadProfile() {
+                try {
+                    const profileData = localStorage.getItem("userProfile");
+                    if (profileData) {
+                        this.profile = JSON.parse(profileData);
+                        this.displayProfile();
+                    }
+                } catch (e) {
+                    console.error("Profile load error:", e);
+                    document.getElementById("profileError").innerText = "Failed to load profile. Clear browser data and try again.";
+                }
+            }
+
+            // Display profile information
+            displayProfile() {
+                const displayDiv = document.getElementById("profileDisplay");
+                if (this.profile) {
+                    displayDiv.innerHTML = `
+                        <p><strong>Username:</strong> ${this.profile.username}</p>
+                        <p><strong>Age:</strong> ${this.profile.age}</p>
+                        <p><strong>Height:</strong> ${this.profile.height} cm</p>
+                        <p><strong>Weight:</strong> ${this.profile.weight} kg</p>
+                        <p><strong>Gender:</strong> ${this.profile.gender}</p>
+                        <p><strong>BMI:</strong> ${this.profile.bmi}</p>
+                        <p><strong>Daily Calorie Goal:</strong> ${this.profile.calorieGoal}</p>
+                    `;
+                } else {
+                    displayDiv.innerHTML = "<p>No profile data available.</p>";
+                }
+            }
+
+            // Clear all data from localStorage
+            clearAllData() {
+                try {
+                    if (confirm("Are you sure you want to clear all data? This cannot be undone.")) {
+                        localStorage.removeItem("userProfile");
+                        localStorage.removeItem("foodLogs");
+                        localStorage.removeItem("exerciseLogs");
+                        this.profile = null;
+                        this.displayProfile();
+                        foodLogger.foodLogs = [];
+                        foodLogger.displayFoodLogs();
+                        exerciseLogger.exerciseLogs = [];
+                        exerciseLogger.displayExerciseLogs();
+                        document.getElementById("progressReport").innerHTML = "";
+                        if (progressTracker.chart) {
+                            progressTracker.chart.destroy();
+                        }
+                        document.getElementById("profileError").innerText = "All data cleared.";
+                    }
+                } catch (e) {
+                    console.error("Clear data error:", e);
+                    document.getElementById("profileError").innerText = "Failed to clear data.";
+                }
+            }
+        }
+
+        // Initialize UserProfile
+        const userProfile = new UserProfile();
+
+        // Save profile button handler
+        function saveProfile() {
+            const username = document.getElementById("username").value.trim();
+            const age = document.getElementById("age").value;
+            const height = document.getElementById("height").value;
+            const weight = document.getElementById("weight").value;
+            const gender = document.getElementById("gender").value;
+            const calorieGoal = document.getElementById("calorieGoal").value;
+            userProfile.saveProfile(username, age, height, weight, gender, calorieGoal);
+        }
+
+        // Clear all data button handler
+        function clearAllData() {
+            userProfile.clearAllData();
+        }
+
+        // Team Member 2: Food Intake Logging (200+ lines)
+        class FoodLogger {
+            constructor() {
+                this.foodLogs = [];
+                this.loadFoodLogs();
+            }
+
+            // Validate food input
+            validateFood(foodName, calories, protein, carbs, fats, date) {
+                let errors = [];
+                if (!foodName || foodName.length < 2) {
+                    errors.push("Food name must be at least 2 characters.");
+                }
+                if (!calories || calories < 0 || calories > 2000) {
+                    errors.push("Calories must be between 0 and 2000.");
+                }
+                if (protein && (protein < 0 || protein > 500)) {
+                    errors.push("Protein must be between 0 and 500 grams.");
+                }
+                if (carbs && (carbs < 0 || carbs > 500)) {
+                    errors.push("Carbs must be between 0 and 500 grams.");
+                }
+                if (fats && (fats < 0 || fats > 500)) {
+                    errors.push("Fats must be between 0 and 500 grams.");
+                }
+                if (!date) {
+                    errors.push("Date is required.");
+                }
+                return errors;
+            }
+
+            // Log food intake
+            logFood(foodName, calories, protein, carbs, fats, date) {
+                const errors = this.validateFood(foodName, calories, protein, carbs, fats, date);
+                if (errors.length > 0) {
+                    document.getElementById("foodError").innerText = errors.join(" ");
+                    return false;
+                }
+                try {
+                    const foodEntry = {
+                        id: Date.now(),
+                        foodName,
+                        calories: parseInt(calories),
+                        protein: protein ? parseFloat(protein) : 0,
+                        carbs: carbs ? parseFloat(carbs) : 0,
+                        fats: fats ? parseFloat(fats) : 0,
+                        date
+                    };
+                    this.foodLogs.push(foodEntry);
+                    localStorage.setItem("foodLogs", JSON.stringify(this.foodLogs));
+                    this.displayFoodLogs();
+                    document.getElementById("foodError").innerText = "";
+                    return true;
+                } catch (e) {
+                    console.error("Food logging error:", e);
+                    document.getElementById("foodError").innerText = "Failed to log food. Check browser settings.";
+                    return false;
+                }
+            }
+
+            // Delete food log
+            deleteFoodLog(id) {
+                try {
+                    this.foodLogs = this.foodLogs.filter(log => log.id !== id);
+                    localStorage.setItem("foodLogs", JSON.stringify(this.foodLogs));
+                    this.displayFoodLogs();
+                } catch (e) {
+                    console.error("Food delete error:", e);
+                    document.getElementById("foodError").innerText = "Failed to delete food log.";
+                }
+            }
+
+            // Load food logs from localStorage
+            loadFoodLogs() {
+                try {
+                    const logs = localStorage.getItem("foodLogs");
+                    if (logs) {
+                        const parsedLogs = JSON.parse(logs);
+                        if (Array.isArray(parsedLogs)) {
+                            // Migrate old logs to include macronutrients
+                            this.foodLogs = parsedLogs.map(log => ({
+                                id: log.id || Date.now(),
+                                foodName: log.foodName || "Unknown",
+                                calories: parseInt(log.calories) || 0,
+                                protein: parseFloat(log.protein) || 0,
+                                carbs: parseFloat(log.carbs) || 0,
+                                fats: parseFloat(log.fats) || 0,
+                                date: log.date || new Date().toISOString().split("T")[0]
+                            }));
+                            localStorage.setItem("foodLogs", JSON.stringify(this.foodLogs));
+                            this.displayFoodLogs();
+                        } else {
+                            throw new Error("Invalid food logs format");
+                        }
+                    }
+                } catch (e) {
+                    console.error("Food logs load error:", e);
+                    document.getElementById("foodError").innerText = "Failed to load food logs. Data cleared to prevent errors.";
+                    localStorage.removeItem("foodLogs");
+                    this.foodLogs = [];
+                    this.displayFoodLogs();
+                }
+            }
+
+            // Display food logs in table
+            displayFoodLogs() {
+                const tableBody = document.getElementById("foodTableBody");
+                tableBody.innerHTML = "";
+                this.foodLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                this.foodLogs.forEach(log => {
+                    const row = document.createElement("tr");
+                    row.className = "odd:bg-gray-100";
+                    row.innerHTML = `
+                        <td class="border border-gray-200 p-3">${log.date}</td>
+                        <td class="border border-gray-200 p-3">${log.foodName}</td>
+                        <td class="border border-gray-200 p-3">${log.calories}</td>
+                        <td class="border border-gray-200 p-3">${log.protein}</td>
+                        <td class="border border-gray-200 p-3">${log.carbs}</td>
+                        <td class="border border-gray-200 p-3">${log.fats}</td>
+                        <td class="border border-gray-200 p-3"><button class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-all duration-300" onclick="foodLogger.deleteFoodLog(${log.id})">Delete</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            // Get total calories for a specific date
+            getCaloriesForDate(date) {
+                return this.foodLogs
+                    .filter(log => log.date === date)
+                    .reduce((total, log) => total + log.calories, 0);
+            }
+
+            // Get macronutrient totals for a specific date
+            getMacrosForDate(date) {
+                return this.foodLogs
+                    .filter(log => log.date === date)
+                    .reduce(
+                        (totals, log) => ({
+                            protein: totals.protein + (log.protein || 0),
+                            carbs: totals.carbs + (log.carbs || 0),
+                            fats: totals.fats + (log.fats || 0)
+                        }),
+                        { protein: 0, carbs: 0, fats: 0 }
+                    );
+            }
+        }
 
