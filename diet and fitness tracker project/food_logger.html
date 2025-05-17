@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Logger - Diet and Fitness Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/heroicons@2.0.18/dist/heroicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%239C92AC" fill-opacity="0.1"%3E%3Cpath d="M0 0h1v1H0zM19 19h1v1h-1z"/%3E%3C/g%3E%3C/svg%3E');
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        button {
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        table tr {
+            transition: background-color 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 sm:p-6">
+    <div class="container bg-white rounded-xl shadow-xl p-8 max-w-5xl w-full">
+        <h1 class="text-4xl font-bold text-white bg-gradient-to-r from-teal-500 to-blue-600 py-4 px-6 rounded-lg mb-8 text-center">Food Logger - Diet and Fitness Tracker</h1>
+
+        <!-- Food Intake Section -->
+        <div class="mb-12 p-6 bg-gray-50 rounded-xl shadow-lg animate-fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                Log Food Intake
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <select id="foodSelect" onchange="fillFoodDetails()" class="p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                    <option value="" selected>Custom Food</option>
+                    <option value="Apple">Apple</option>
+                    <option value="Banana">Banana</option>
+                    <option value="Rice">Rice</option>
+                    <option value="Bread">Bread</option>
+                    <option value="Egg">Egg</option>
+                    <option value="Chicken">Chicken</option>
+                    <option value="Milk">Milk</option>
+                    <option value="Orange">Orange</option>
+                </select>
+                <input type="text" id="foodName" placeholder="Food Name" class="p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                <input type="number" id="foodCalories" placeholder="Calories" class="p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                <input type="number" id="foodProtein" placeholder="Protein (g)" class="p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                <input type="number" id="foodCarbs" placeholder="Carbs (g)" class="p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                <input type="number" id="foodFats" placeholder="Fats (g)" class="p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                <input type="date" id="foodDate" class="p-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+            </div>
+            <button onclick="logFood()" class="mt-6 bg-gradient-to-r from-teal-500 to-blue-600 text-white px-6 py-3 rounded-md hover:bg-teal-600">Log Food</button>
+            <div id="foodError" class="text-red-400 text-sm mt-3"></div>
+            <div class="overflow-x-auto mt-6">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-teal-100 text-gray-700">
+                            <th class="border border-gray-200 p-3 text-left">Date</th>
+                            <th class="border border-gray-200 p-3 text-left">Food</th>
+                            <th class="border border-gray-200 p-3 text-left">Calories</th>
+                            <th class="border border-gray-200 p-3 text-left">Protein (g)</th>
+                            <th class="border border-gray-200 p-3 text-left">Carbs (g)</th>
+                            <th class="border border-gray-200 p-3 text-left">Fats (g)</th>
+                            <th class="border border-gray-200 p-3 text-left">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="foodTableBody" class="text-gray-600"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("Food Logger Module Initialized");
+
+        const foodData = {
+            "Apple": { calories: 95, protein: 0.5, carbs: 25, fats: 0.2 },
+            "Banana": { calories: 120, protein: 1.2, carbs: 30, fats: 0.3 },
+            "Rice": { calories: 200, protein: 4, carbs: 45, fats: 0.5 },
+            "Bread": { calories: 80, protein: 3, carbs: 15, fats: 1 },
+            "Egg": { calories: 70, protein: 6, carbs: 1, fats: 5 },
+            "Chicken": { calories: 165, protein: 31, carbs: 0, fats: 3.6 },
+            "Milk": { calories: 120, protein: 8, carbs: 12, fats: 5 },
+            "Orange": { calories: 85, protein: 1, carbs: 21, fats: 0.2 }
+        };
+
+        class FoodLogger {
+            constructor() {
+                this.foodLogs = [];
+                this.loadFoodLogs();
+            }
+
+            validateFood(foodName, calories, protein, carbs, fats, date) {
+                let errors = [];
+                if (!foodName || foodName.length < 2) {
+                    errors.push("Food name must be at least 2 characters.");
+                }
+                if (!calories || calories < 0 || calories > 2000) {
+                    errors.push("Calories must be between 0 and 2000.");
+                }
+                if (protein && (protein < 0 || protein > 500)) {
+                    errors.push("Protein must be between 0 and 500 grams.");
+                }
+                if (carbs && (carbs < 0 || carbs > 500)) {
+                    errors.push("Carbs must be between 0 and 500 grams.");
+                }
+                if (fats && (fats < 0 || fats > 500)) {
+                    errors.push("Fats must be between 0 and 500 grams.");
+                }
+                if (!date) {
+                    errors.push("Date is required.");
+                }
+                return errors;
+            }
+
+            logFood(foodName, calories, protein, carbs, fats, date) {
+                const errors = this.validateFood(foodName, calories, protein, carbs, fats, date);
+                if (errors.length > 0) {
+                    document.getElementById("foodError").innerText = errors.join(" ");
+                    return false;
+                }
+                try {
+                    const foodEntry = {
+                        id: Date.now(),
+                        foodName,
+                        calories: parseInt(calories),
+                        protein: protein ? parseFloat(protein) : 0,
+                        carbs: carbs ? parseFloat(carbs) : 0,
+                        fats: fats ? parseFloat(fats) : 0,
+                        date
+                    };
+                    this.foodLogs.push(foodEntry);
+                    localStorage.setItem("foodLogs", JSON.stringify(this.foodLogs));
+                    this.displayFoodLogs();
+                    document.getElementById("foodError").innerText = "";
+                    return true;
+                } catch (e) {
+                    console.error("Food logging error:", e);
+                    document.getElementById("foodError").innerText = "Failed to log food. Check browser settings.";
+                    return false;
+                }
+            }
+
+            deleteFoodLog(id) {
+                try {
+                    this.foodLogs = this.foodLogs.filter(log => log.id !== id);
+                    localStorage.setItem("foodLogs", JSON.stringify(this.foodLogs));
+                    this.displayFoodLogs();
+                } catch (e) {
+                    console.error("Food delete error:", e);
+                    document.getElementById("foodError").innerText = "Failed to delete food log.";
+                }
+            }
+
+            loadFoodLogs() {
+                try {
+                    const logs = localStorage.getItem("foodLogs");
+                    if (logs) {
+                        const parsedLogs = JSON.parse(logs);
+                        if (Array.isArray(parsedLogs)) {
+                            this.foodLogs = parsedLogs.map(log => ({
+                                id: log.id || Date.now(),
+                                foodName: log.foodName || "Unknown",
+                                calories: parseInt(log.calories) || 0,
+                                protein: parseFloat(log.protein) || 0,
+                                carbs: parseFloat(log.carbs) || 0,
+                                fats: parseFloat(log.fats) || 0,
+                                date: log.date || new Date().toISOString().split("T")[0]
+                            }));
+                            localStorage.setItem("foodLogs", JSON.stringify(this.foodLogs));
+                            this.displayFoodLogs();
+                        } else {
+                            throw new Error("Invalid food logs format");
+                        }
+                    }
+                } catch (e) {
+                    console.error("Food logs load error:", e);
+                    document.getElementById("foodError").innerText = "Failed to load food logs. Data cleared to prevent errors.";
+                    localStorage.removeItem("foodLogs");
+                    this.foodLogs = [];
+                    this.displayFoodLogs();
+                }
+            }
+
+            displayFoodLogs() {
+                const tableBody = document.getElementById("foodTableBody");
+                tableBody.innerHTML = "";
+                this.foodLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                this.foodLogs.forEach(log => {
+                    const row = document.createElement("tr");
+                    row.className = "odd:bg-gray-100";
+                    row.innerHTML = `
+                        <td class="border border-gray-200 p-3">${log.date}</td>
+                        <td class="border border-gray-200 p-3">${log.foodName}</td>
+                        <td class="border border-gray-200 p-3">${log.calories}</td>
+                        <td class="border border-gray-200 p-3">${log.protein}</td>
+                        <td class="border border-gray-200 p-3">${log.carbs}</td>
+                        <td class="border border-gray-200 p-3">${log.fats}</td>
+                        <td class="border border-gray-200 p-3"><button class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-all duration-300" onclick="foodLogger.deleteFoodLog(${log.id})">Delete</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        const foodLogger = new FoodLogger();
+
+        function fillFoodDetails() {
+            const foodSelect = document.getElementById("foodSelect").value;
+            const foodNameInput = document.getElementById("foodName");
+            const caloriesInput = document.getElementById("foodCalories");
+            const proteinInput = document.getElementById("foodProtein");
+            const carbsInput = document.getElementById("foodCarbs");
+            const fatsInput = document.getElementById("foodFats");
+
+            if (foodSelect && foodData[foodSelect]) {
+                foodNameInput.value = foodSelect;
+                caloriesInput.value = foodData[foodSelect].calories;
+                proteinInput.value = foodData[foodSelect].protein;
+                carbsInput.value = foodData[foodSelect].carbs;
+                fatsInput.value = foodData[foodSelect].fats;
+            } else {
+                foodNameInput.value = "";
+                caloriesInput.value = "";
+                proteinInput.value = "";
+                carbsInput.value = "";
+                fatsInput.value = "";
+            }
+        }
+
+        function logFood() {
+            const foodName = document.getElementById("foodName").value.trim();
+            const calories = document.getElementById("foodCalories").value;
+            const protein = document.getElementById("foodProtein").value;
+            const carbs = document.getElementById("foodCarbs").value;
+            const fats = document.getElementById("foodFats").value;
+            const date = document.getElementById("foodDate").value;
+            foodLogger.logFood(foodName, calories, protein, carbs, fats, date);
+        }
+    </script>
+</body>
+</html>
